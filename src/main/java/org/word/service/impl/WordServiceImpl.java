@@ -67,7 +67,7 @@ public class WordServiceImpl implements WordService {
                     // 5.小标题 （方法说明）
                     String tag = String.valueOf(content.get("summary"));
                     // 6.接口描述
-                    String description = String.valueOf(content.get("summary"));
+                    String description = String.valueOf(content.get("description"));
                     // 7.请求参数格式，类似于 multipart/form-data
                     String requestForm = "";
                     List<String> consumes = (List) content.get("consumes");
@@ -115,23 +115,31 @@ public class WordServiceImpl implements WordService {
                         String ref = (String)((Map)parameters.get(0).get("schema")).get("$ref");
                         if (ref != null) {
                             Map<String, Object> parameters2 = this.getParams(ref, map);
-                            if (parameters != null) {
-                                List<String> requireList = this.getRequire(ref,map);
-
-                                for (String key : parameters2.keySet()) {
-                                    Object obj = parameters2.get(key);
+                            if (parameters != null  ) {
+                                if(parameters2 == null) {
                                     Request request = new Request();
-                                    request.setName(key);
-                                    request.setType(String.valueOf(((Map)obj).get("type")));
-                                    if (requireList!= null && requireList.contains(key)) {
-                                        request.setRequire(true);
-                                    } else {
-                                        request.setRequire(false);
-                                    }
-                                    request.setParamType(String.valueOf(((Map)obj).get("type")));
-                                    request.setRemark(String.valueOf(((Map)obj).get("description")));
+                                    request.setName("{}");
+                                    request.setType("POST");
+                                    request.setRequire(false);
+                                    request.setParamType("{}");
+                                    request.setRemark("JSON格式或者其他");
                                     requestList.add(request);
-
+                                } else {
+                                    List<String> requireList = this.getRequire(ref,map);
+                                    for (String key : parameters2.keySet()) {
+                                        Object obj = parameters2.get(key);
+                                        Request request = new Request();
+                                        request.setName(key);
+                                        request.setType(String.valueOf(((Map)obj).get("type")));
+                                        if (requireList!= null && requireList.contains(key)) {
+                                            request.setRequire(true);
+                                        } else {
+                                            request.setRequire(false);
+                                        }
+                                        request.setParamType(String.valueOf(((Map)obj).get("type")));
+                                        request.setRemark(String.valueOf(((Map)obj).get("description")));
+                                        requestList.add(request);
+                                    }
                                 }
                             }
                         }
@@ -141,9 +149,11 @@ public class WordServiceImpl implements WordService {
                     // 10.返回体
                     List<Response> responseList = new ArrayList<>();
                     Map<String, Object> responses = (LinkedHashMap) content.get("responses");
-                    Iterator<Map.Entry<String, Object>> it3 = responses.entrySet().iterator();
-
-                    while (it3.hasNext()) {
+                    Iterator<Map.Entry<String, Object>> it3 = null;
+                    if(responses != null) {
+                        it3 = responses.entrySet().iterator();
+                    }
+                    while (it3 != null && it3.hasNext()) {
                         Response response = new Response();
                         Map.Entry<String, Object> entry = it3.next();
                         // 状态码 200 201 401 403 404 这样
@@ -173,7 +183,10 @@ public class WordServiceImpl implements WordService {
                     }
                     table.setRequestList(requestList);
                     // 取出来状态是200时的返回值
-                    Object obj = responses.get("200");
+                    Object obj = null;
+                    if( responses != null) {
+                        obj =  responses.get("200");
+                    }
                     if (obj == null) {
                         table.setResponseParam("");
                         result.add(table);
@@ -233,6 +246,9 @@ public class WordServiceImpl implements WordService {
                     tmpMap = (Map<String, Object>) tmpMap.get(tmp);
                 }
             }
+        }
+        if (tmpMap == null) {
+            return null;
         }
         return (Map<String, Object>) tmpMap.get("properties");
     }
