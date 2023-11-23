@@ -117,6 +117,9 @@ public class WordServiceImpl implements WordService {
                             Request request = new Request();
                             String desc = String.valueOf(tempP.get("description"));
                             String type = String.valueOf(tempP.get("type")); // 默认字符串
+                            if (tempP.get("type") == null || tempP.get("type").equals("null")) {
+                                type = "string";
+                            }
                             if (tempP.get("in").equals("path")) {
                                 desc += "(此参数需要拼接到请求路径 path 上)";
                                 type = "string";
@@ -126,7 +129,11 @@ public class WordServiceImpl implements WordService {
                             }
                             request.setName(String.valueOf(tempP.get("name")));
                             request.setType(type);
-                            request.setRequire(String.valueOf(tempP.get("require")).equals("true") || String.valueOf(tempP.get("require")).equals("null"));
+                            String reqi = String.valueOf(tempP.get("require"));
+                            if (reqi == null || reqi.equals("null")) {
+                                reqi = "string";
+                            }
+                            request.setRequire(reqi.equals("true"));
                             request.setParamType(type);
                             request.setRemark(desc);
                             requestList.add(request);
@@ -151,13 +158,17 @@ public class WordServiceImpl implements WordService {
                                             Object obj = parameters2.get(key);
                                             Request request = new Request();
                                             request.setName(key);
-                                            request.setType(String.valueOf(((Map)obj).get("type")));
+                                            String type = String.valueOf(((Map)obj).get("type"));
+                                            if (type.equals("null")) {
+                                                type = "string";
+                                            }
+                                            request.setType(type);
                                             if (requireList!= null && requireList.contains(key)) {
                                                 request.setRequire(true);
                                             } else {
                                                 request.setRequire(false);
                                             }
-                                            request.setParamType(String.valueOf(((Map)obj).get("type")));
+                                            request.setParamType(type);
                                             request.setRemark(String.valueOf(((Map)obj).get("description")));
                                             requestList.add(request);
                                         }
@@ -388,8 +399,10 @@ public class WordServiceImpl implements WordService {
                 case ',':
                     char d = jsonStr.charAt(i-1);
                     if(d == '"' || d == ']' || d == '}' || d >=0 || d<=9){
-                        jsonForMatStr.append(c+"<br/>\n");
-                        jsonForMatStr.append(this.getLevelStr(level));
+                        if (!Character.isWhitespace(c)) {
+                            jsonForMatStr.append(c+"<br/>\n");
+                            jsonForMatStr.append(this.getLevelStr(level));
+                        }
                     } else {
                         jsonForMatStr.append(c);
                     }
