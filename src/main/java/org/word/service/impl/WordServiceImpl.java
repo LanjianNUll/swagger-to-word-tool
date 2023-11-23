@@ -110,42 +110,62 @@ public class WordServiceImpl implements WordService {
 //                            requestList.add(request);
 //                        }
 //                    }
-//                  获取的是第一层的数据
-                    if (parameters !=null && parameters.get(0) != null && ((Map)parameters.get(0).get("schema"))!= null) {
-                        String ref = (String)((Map)parameters.get(0).get("schema")).get("$ref");
-                        if (ref != null) {
-                            Map<String, Object> parameters2 = this.getParams(ref, map);
-                            if (parameters != null  ) {
-                                if(parameters2 == null) {
-                                    Request request = new Request();
-                                    request.setName("{}");
-                                    request.setType("POST");
-                                    request.setRequire(false);
-                                    request.setParamType("{}");
-                                    request.setRemark("JSON格式或者其他");
-                                    requestList.add(request);
-                                } else {
-                                    List<String> requireList = this.getRequire(ref,map);
-                                    for (String key : parameters2.keySet()) {
-                                        Object obj = parameters2.get(key);
+                    for (int i = 0; i < parameters.size();i++) {
+                        // 没有schema ,
+                        if(parameters != null && parameters.get(i) != null && ((Map)parameters.get(i).get("schema"))== null) {
+                            Map<String, Object> tempP = parameters.get(i);
+                            Request request = new Request();
+                            String desc = String.valueOf(tempP.get("description"));
+                            String type = String.valueOf(tempP.get("type")); // 默认字符串
+                            if (tempP.get("in").equals("path")) {
+                                desc += "(此参数需要拼接到请求路径 path 上)";
+                                type = "string";
+                            }
+                            if (tempP.get("in").equals("formData")) {
+                                desc += "(此参数需要使用FormData的形式传递)";
+                            }
+                            request.setName(String.valueOf(tempP.get("name")));
+                            request.setType(type);
+                            request.setRequire(String.valueOf(tempP.get("require")).equals("true") || String.valueOf(tempP.get("require")).equals("null"));
+                            request.setParamType(type);
+                            request.setRemark(desc);
+                            requestList.add(request);
+                        }
+                        // 获取的是层的数据
+                        if (parameters != null && parameters.get(i) != null && ((Map)parameters.get(i).get("schema"))!= null) {
+                            String ref = (String)((Map)parameters.get(i).get("schema")).get("$ref");
+                            if (ref != null) {
+                                Map<String, Object> parameters2 = this.getParams(ref, map);
+                                if (parameters != null  ) {
+                                    if(parameters2 == null) {
                                         Request request = new Request();
-                                        request.setName(key);
-                                        request.setType(String.valueOf(((Map)obj).get("type")));
-                                        if (requireList!= null && requireList.contains(key)) {
-                                            request.setRequire(true);
-                                        } else {
-                                            request.setRequire(false);
-                                        }
-                                        request.setParamType(String.valueOf(((Map)obj).get("type")));
-                                        request.setRemark(String.valueOf(((Map)obj).get("description")));
+                                        request.setName("JSON");
+                                        request.setType("string");
+                                        request.setRequire(false);
+                                        request.setParamType("string");
+                                        request.setRemark("JSON格式或者其他");
                                         requestList.add(request);
+                                    } else {
+                                        List<String> requireList = this.getRequire(ref,map);
+                                        for (String key : parameters2.keySet()) {
+                                            Object obj = parameters2.get(key);
+                                            Request request = new Request();
+                                            request.setName(key);
+                                            request.setType(String.valueOf(((Map)obj).get("type")));
+                                            if (requireList!= null && requireList.contains(key)) {
+                                                request.setRequire(true);
+                                            } else {
+                                                request.setRequire(false);
+                                            }
+                                            request.setParamType(String.valueOf(((Map)obj).get("type")));
+                                            request.setRemark(String.valueOf(((Map)obj).get("description")));
+                                            requestList.add(request);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-
-
                     // 10.返回体
                     List<Response> responseList = new ArrayList<>();
                     Map<String, Object> responses = (LinkedHashMap) content.get("responses");
