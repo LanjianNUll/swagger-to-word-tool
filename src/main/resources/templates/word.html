@@ -64,18 +64,18 @@
             <tr class="bg" align="center">
                 <td>参数名</td>
                 <td>数据类型</td>
-                <td>参数类型</td>
+<!--                <td>参数类型</td>-->
                 <td>是否必填</td>
-                <td>说明</td>
+                <td colspan="2">说明</td>
             </tr>
 
             <tr align="center" th:each="request:${table.requestList}">
                 <td th:text="${request.name}"></td>
                 <td th:text="${request.type}"></td>
-                <td th:text="${request.paramType}"></td>
+<!--                <td th:text="${request.paramType}"></td>-->
                 <td th:if="${request.require}" th:text="Y"></td>
                 <td th:if="${!request.require}" th:text="N"></td>
-                <td th:text="${request.remark}"></td>
+                <td colspan="2" th:text="${request.remark}"></td>
             </tr>
 
             <tr class="bg" align="center">
