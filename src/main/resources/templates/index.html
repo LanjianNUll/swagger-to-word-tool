@@ -26,7 +26,7 @@
         <h1>Swagger 转换 word 工具</h1>
 
         <p>输入需要生成的 swagger 的json 地址</p>
-        <input id="api_doc" value="https://petstore.swagger.io/v2/swagger.json " />
+        <input style="width: 100%" id="api_doc" value="https://petstore.swagger.io/v2/swagger.json " />
 
         <button onclick="preview()">预览</button>
         <button onclick="genrea()">生成word文档</button>
@@ -34,7 +34,7 @@
       <div>
         <h4>使用方法：</h4>
         <li> 1、 打开swagger的地址， 打开网页控制台，找到network， swagger 发送的 json请求</li>
-        <li> 2、 复制json请求的完整地址， 输入上面输入框</li>
+        <li> 2、 复制json请求的完整地址， 输入上面输入框 （要先检查json是否可用，可先复制到浏览器地址栏检测）</li>
         <li> 3、 点击预览 打开预览页面</li>
         <li> 4、 点击生成word文档，将自动生成word并下载</li>
       </div>
