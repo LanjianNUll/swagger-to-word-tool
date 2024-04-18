@@ -58,7 +58,7 @@ public class WordServiceImpl implements WordService {
                     Map.Entry<String, LinkedHashMap> firstRequest = it2.next();
                     Map<String, Object> content = firstRequest.getValue();
                     // 4. 大标题（类说明） 默认未swagger title
-                    String title =  ((LinkedHashMap)map.get("info")).get("title").toString();
+                    String title = ((LinkedHashMap) map.get("info")).get("title").toString();
                     try {
                         title = String.valueOf(((List) content.get("tags")).get(0));
                     } catch (Exception e) {
@@ -110,10 +110,11 @@ public class WordServiceImpl implements WordService {
 //                            requestList.add(request);
 //                        }
 //                    }
-                    if(parameters != null) {
-                        for (int i = 0; i < parameters.size();i++) {
+                    // 处理 "parameters":
+                    if (parameters != null) {
+                        for (int i = 0; i < parameters.size(); i++) {
                             // 没有schema ,
-                            if(parameters != null && parameters.get(i) != null && ((Map)parameters.get(i).get("schema"))== null) {
+                            if (parameters != null && parameters.get(i) != null && ((Map) parameters.get(i).get("schema")) == null) {
                                 Map<String, Object> tempP = parameters.get(i);
                                 Request request = new Request();
                                 String desc = String.valueOf(tempP.get("description"));
@@ -140,12 +141,12 @@ public class WordServiceImpl implements WordService {
                                 requestList.add(request);
                             }
                             // 获取的是层的数据
-                            if (parameters != null && parameters.get(i) != null && ((Map)parameters.get(i).get("schema"))!= null) {
-                                String ref = (String)((Map)parameters.get(i).get("schema")).get("$ref");
+                            if (parameters != null && parameters.get(i) != null && ((Map) parameters.get(i).get("schema")) != null) {
+                                String ref = (String) ((Map) parameters.get(i).get("schema")).get("$ref");
                                 if (ref != null) {
                                     Map<String, Object> parameters2 = this.getParams(ref, map);
-                                    if (parameters != null  ) {
-                                        if(parameters2 == null) {
+                                    if (parameters != null) {
+                                        if (parameters2 == null) {
                                             Request request = new Request();
                                             request.setName("JSON");
                                             request.setType("string");
@@ -154,31 +155,95 @@ public class WordServiceImpl implements WordService {
                                             request.setRemark("JSON格式或者其他");
                                             requestList.add(request);
                                         } else {
-                                            List<String> requireList = this.getRequire(ref,map);
+                                            List<String> requireList = this.getRequire(ref, map);
                                             for (String key : parameters2.keySet()) {
                                                 Object obj = parameters2.get(key);
                                                 Request request = new Request();
                                                 request.setName(key);
-                                                String type = String.valueOf(((Map)obj).get("type"));
+                                                String type = String.valueOf(((Map) obj).get("type"));
                                                 if (type.equals("null")) {
                                                     type = "string";
                                                 }
                                                 request.setType(type);
-                                                if (requireList!= null && requireList.contains(key)) {
+                                                if (requireList != null && requireList.contains(key)) {
                                                     request.setRequire(true);
                                                 } else {
                                                     request.setRequire(false);
                                                 }
                                                 request.setParamType(type);
-                                                request.setRemark(String.valueOf(((Map)obj).get("description")));
+                                                request.setRemark(String.valueOf(((Map) obj).get("description")));
                                                 requestList.add(request);
                                             }
                                         }
                                     }
+                                } else {
+                                    // 处理有 schema 无ref的情况
+//                                    {
+//                                        "name": "state",
+//                                            "in": "query",
+//                                            "description": "状态（active:激活 suspended:挂起）",
+//                                            "required": true,
+//                                            "schema": {
+//                                        "type": "string"
+//                                    }
+                                    Map<String, Object> reqP = parameters.get(i);
+                                    Request request = new Request();
+                                    request.setName((String) reqP.get("name"));
+                                    request.setRequire((Boolean) reqP.get("required"));
+                                    String type = String.valueOf(((Map) reqP.get("schema")).get("type"));
+                                    if (type.equals("null")) {
+                                        type = "string";
+                                    }
+                                    request.setType(type);
+                                    request.setParamType(type);
+                                    request.setRemark((String) reqP.get("description"));
+                                    requestList.add(request);
                                 }
                             }
                         }
                     }
+
+                    // 处理 "requestBody": {
+                    Map<String, LinkedHashMap> requestBody = (LinkedHashMap) content.get("requestBody");
+                    if (requestBody != null) {
+                        Map<String, LinkedHashMap> contett = (LinkedHashMap) requestBody.get("content");
+                        Map<String, LinkedHashMap> applJ = (LinkedHashMap) contett.get("application/json");
+                        Map<String, String> schema = applJ != null ? (LinkedHashMap) applJ.get("schema") : null;
+                        String ref = schema != null ? schema.get("$ref") : null;
+                        if (ref != null) {
+                            Map<String, Object> parameters2 = this.getParams(ref, map);
+                            if (parameters2 == null) {
+                                Request request = new Request();
+                                request.setName("JSON");
+                                request.setType("string");
+                                request.setRequire(false);
+                                request.setParamType("string");
+                                request.setRemark("JSON格式或者其他");
+                                requestList.add(request);
+                            } else {
+                                List<String> requireList = this.getRequire(ref, map);
+                                for (String key : parameters2.keySet()) {
+                                    Object obj = parameters2.get(key);
+                                    Request request = new Request();
+                                    request.setName(key);
+                                    String type = String.valueOf(((Map) obj).get("type"));
+                                    if (type.equals("null")) {
+                                        type = "string";
+                                    }
+                                    request.setType(type);
+                                    if (requireList != null && requireList.contains(key)) {
+                                        request.setRequire(true);
+                                    } else {
+                                        request.setRequire(false);
+                                    }
+                                    request.setParamType(type);
+                                    request.setRemark(String.valueOf(((Map) obj).get("description")));
+                                    requestList.add(request);
+                                }
+                            }
+                        }
+                    }
+
                     // 10.返回体
                     List<Response> responseList = new ArrayList<>();
                     Map<String, Object> responses = (LinkedHashMap) content.get("responses");
@@ -225,7 +290,24 @@ public class WordServiceImpl implements WordService {
                         result.add(table);
                         continue;
                     }
-//                    两个结构1  schema { $ref:...}   2  {$ref:...}
+                    // 两个结构
+//                    "responses": {
+//                        "200": {
+//                            "description": "OK",
+//                                    "content": {
+//                                "*/*": {
+//                                    "schema": {
+//                                        "$ref": "#/components/schemas/RString"
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                    "responses":{
+//                        "200": {
+//                              "$ref":"#/components/schemas/RString"
+//                          }
+//                    }
                     Object schema = ((Map) obj).get("schema");
                     if(schema == null) {
                         schema = obj;
@@ -246,6 +328,18 @@ public class WordServiceImpl implements WordService {
                         result.add(table);
                         continue;
                     }
+                    if(((Map) schema).get("content") != null){
+                        Object respContent =((Map) schema).get("content");
+                        Object xing = ((Map) respContent).get("*/*");
+                        Object tempSchema = ((Map) xing).get("schema");
+                        String ref = (String) ((Map) tempSchema).get("$ref");
+                        //解析swagger2 ref链接
+                        ObjectNode objectNode = parseRef(ref, map);
+                        table.setResponseParam(this.format(objectNode.toString()));
+                        result.add(table);
+                        continue;
+                    }
+
                     Object items = ((Map) schema).get("items");
                     if (items != null && ((Map) items).get("$ref") != null) {
                         //数组类型返回值
