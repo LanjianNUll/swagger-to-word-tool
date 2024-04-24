@@ -38,6 +38,7 @@ public class WordServiceImpl implements WordService {
     public List<Table> tableList(String jsonUrl) {
         jsonUrl = Optional.ofNullable(jsonUrl).orElse(swaggerUrl);
         List<Table> result = new ArrayList<>();
+        Set<String> titleSet = new HashSet<String>();
         try {
             String jsonStr = restTemplate.getForObject(jsonUrl, String.class);
             // convert JSON string to Map
@@ -262,12 +263,14 @@ public class WordServiceImpl implements WordService {
                         responseList.add(response);
                     }
 
+                    // 保存出现的tag
+                    titleSet.add(title);
                     //封装Table
                     Table table = new Table();
                     //是否添加为菜单
-                    if (MenuUtils.isMenu(title)) {
+//                    if (MenuUtils.isMenu(title)) {
                         table.setTitle(title);
-                    }
+//                    }
                     table.setUrl(url);
                     table.setTag(tag);
                     table.setDescription(description);
@@ -359,7 +362,26 @@ public class WordServiceImpl implements WordService {
         } catch (Exception e) {
             log.error("parse error", e);
         }
-        return result;
+//        处理排序问题 解决同一个tag 下的问题
+        List<Table> sortResult = new ArrayList<>();
+        for ( String til : titleSet) {
+            for (int i = 0; i < result.size(); i++) {
+                Table tempT = result.get(i);
+                if(tempT.getTitle().equals(til)) {
+                    sortResult.add(tempT);
+                }
+            }
+        }
+        for (int i = 0; i < sortResult.size(); i++) {
+            String tempT = sortResult.get(i).getTitle();
+            if (MenuUtils.isMenu(tempT)) {
+                sortResult.get(i).setTitle(tempT);
+            } else {
+                sortResult.get(i).setTitle("");
+            }
+        }
+
+        return sortResult;
     }
 
     private Map<String, Object> getParams(String ref, Map<String, Object> map) {
