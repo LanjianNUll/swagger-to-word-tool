@@ -18,7 +18,7 @@
 
 ###  word示例
 
-![image](https://github.com/LanjianNUll/swagger-to-word-tool/blob/main/word示例.png)
+![image](https://github.com/LanjianNUll/swagger-to-word-tool/blob/main/word.png)
 
 
 
