@@ -69,6 +69,9 @@ public class WordServiceImpl implements WordService {
                     String tag = String.valueOf(content.get("summary"));
                     // 6.接口描述
                     String description = String.valueOf(content.get("description"));
+                    if (description== "null") {
+                        description = tag;
+                    }
                     // 7.请求参数格式，类似于 multipart/form-data
                     String requestForm = "";
                     List<String> consumes = (List) content.get("consumes");
