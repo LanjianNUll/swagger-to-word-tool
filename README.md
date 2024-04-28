@@ -2,19 +2,21 @@
 
 > 一个简单实用的 swagger转换word文档的工具项目 （支持 openapi 3）
 
+1. 支持 open-api 3.0
+2. 支持预览和word保持一致
 
-### Usage example 使用示例 
+### e 使用示例 
 
 
 ![image](https://github.com/LanjianNUll/swagger-to-word-tool/blob/main/使用示例.png)
 
 
-### Usage example 预览示例
+###  预览示例
 
 ![image](https://github.com/LanjianNUll/swagger-to-word-tool/blob/main/预览示例.png)
 
 
-### Usage example word示例
+###  word示例
 
 ![image](https://github.com/LanjianNUll/swagger-to-word-tool/blob/main/word示例.png)
 
