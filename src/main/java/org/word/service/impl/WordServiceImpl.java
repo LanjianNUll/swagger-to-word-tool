@@ -354,7 +354,7 @@ public class WordServiceImpl implements WordService {
                         ObjectNode objectNode = parseRef(ref, map);
                         ArrayNode arrayNode = JsonUtils.createArrayNode();
                         arrayNode.add(objectNode);
-                        table.setResponseParam(arrayNode.toString());
+                        table.setResponseParam(this.format(arrayNode.toString()));
                         result.add(table);
                         continue;
                     }
